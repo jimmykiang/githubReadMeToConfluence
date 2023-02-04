@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/google/go-github/v49 v49.1.0
 	github.com/urfave/cli/v2 v2.24.3
+	github.com/virtomize/confluence-go-api v1.4.4
 	golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be
 )
 
@@ -12,6 +13,7 @@ require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/golang/protobuf v1.3.2 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
+	github.com/magefile/mage v1.14.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/urfave/cli/v2"
 	"os"
+	"strings"
 )
 
 import utils "jimmykiang/githubReadMeToConfluence/utils"
@@ -36,15 +37,67 @@ func main() {
 				Usage:    "Valid Access Token for GitHub.",
 				Required: true,
 			},
+			&cli.StringFlag{
+				Name:     "confluencelocation",
+				Aliases:  []string{"cl"},
+				Usage:    "Domain of the Confluence owner. ",
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:     "userName",
+				Aliases:  []string{"u"},
+				Usage:    "Valid username for Confluence.",
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:     "confluencetoken",
+				Aliases:  []string{"ct"},
+				Usage:    "Valid Access Token for Confluence.",
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:     "title",
+				Aliases:  []string{"t"},
+				Usage:    "An initial one-word title for the Confluence page.",
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:     "key",
+				Aliases:  []string{"k"},
+				Usage:    "Key for the Confluence Space.",
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:    "id",
+				Aliases: []string{"i"},
+				Usage:   "Id for creating a subPage (Leaving it blank will create the page at the root of the Confluence space tree.)",
+			},
 		},
 		Action: func(cCtx *cli.Context) error {
 			owner := cCtx.String("owner")
 			repository := cCtx.String("repository")
 			filepath := cCtx.String("filepath")
 			githubtoken := cCtx.String("githubtoken")
+			userName := cCtx.String("userName")
+			confluenceToken := cCtx.String("confluencetoken")
+			title := cCtx.String("title")
+			key := cCtx.String("key")
+			id := cCtx.String("id")
 
-			utils.FromGitHub(owner, repository, filepath, githubtoken)
+			confluencelocation := cCtx.String("confluencelocation")
+			confluencelocation = strings.TrimSpace(confluencelocation)
 
+			payLoad := utils.FromGitHub(owner, repository, filepath, githubtoken)
+
+			//re := regexp.MustCompile(`&`)
+			//payLoad = re.ReplaceAllString(payLoad, "&amp;")
+
+			// remove i.e.: [Add pipeline permissions to a repository resource]
+			//re = regexp.MustCompile(`\[(.*?)\]`)
+			//payLoad = re.ReplaceAllString(payLoad, "")
+
+			html := utils.MarkDownToHtml(payLoad)
+			utils.ToConfluence(string(html), confluencelocation, userName, confluenceToken, title, key, id)
 			return nil
 		},
 
