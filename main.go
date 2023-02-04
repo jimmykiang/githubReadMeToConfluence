@@ -1,79 +1,87 @@
 package main
 
 import (
-	"context"
 	"fmt"
-	"github.com/google/go-github/v49/github"
-	"log"
+	"github.com/urfave/cli/v2"
+	"os"
 )
-import "golang.org/x/oauth2"
+
+import utils "jimmykiang/githubReadMeToConfluence/utils"
 
 func main() {
 
-	owner := "jimmykiang"
-	repository := "testReadme"
-	accessToken := "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"
+	app := &cli.App{
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:     "owner",
+				Aliases:  []string{"o"},
+				Usage:    "Owner of the GitHub Repository.",
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:     "repository",
+				Aliases:  []string{"r"},
+				Usage:    "Repository name.",
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:     "filepath",
+				Aliases:  []string{"f"},
+				Usage:    "File including its path from the repository root.",
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:     "githubtoken",
+				Aliases:  []string{"gt"},
+				Usage:    "Valid Access Token for GitHub.",
+				Required: true,
+			},
+		},
+		Action: func(cCtx *cli.Context) error {
+			owner := cCtx.String("owner")
+			repository := cCtx.String("repository")
+			filepath := cCtx.String("filepath")
+			githubtoken := cCtx.String("githubtoken")
 
-	ctx := context.Background()
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: accessToken},
-	)
-	tc := oauth2.NewClient(ctx, ts)
+			utils.FromGitHub(owner, repository, filepath, githubtoken)
 
-	client := github.NewClient(tc)
+			return nil
+		},
 
-	readme, _, err := client.Repositories.GetReadme(context.Background(), owner, repository, nil)
-	if err != nil {
-		log.Fatal(err)
+		Version: "v1.0 2023",
 	}
-	readmeContent, _ := readme.GetContent()
-	fmt.Println(string(readmeContent))
 
-	// ToDo below:
+	app.CustomAppHelpTemplate = `
+			***	GitHub To Confluence tool {{.Version}} ***
 
-	// list all repositories for the authenticated user
-	//repos, _, _ := client.Repositories.List(ctx, "", nil)
-	//fmt.Println(repos)
+						A product from: 
+			*** Way of Working and Practices ***
 
-	//// Load API keys
-	//githubAPIKey := "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"
-	////confluenceAPIKey := "YOUR_CONFLUENCE_API_KEY"
-	//urlStr := "https://api.github.com/repos/jimmykiang/fluidengine/blob/main/README.md"
-	//
-	//// Initialize GitHub client
-	//client := github.NewClient(nil)
-	//req, err := client.NewRequest("GET", urlStr, nil)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//req.Header.Set("Authorization", "Token "+githubAPIKey)
-	//readme, _, err := client.Repositories.GetReadme(context.Background(), "OWNER", "REPO", nil)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//readmeContent, _ := readme.GetContent()
-	//fmt.Println(string(readmeContent))
+A CLI convenience tool meant to help you replicate the content from your GitHub file
+into your favourite Confluence page. One at a time!
 
-	/*
-		// Initialize Confluence client
-		url := "https://YOUR_CONFLUENCE_URL/wiki/rest/api/content"
-		req, err = http.NewRequest("POST", url, strings.NewReader(string(readmeContent)))
-		if err != nil {
-			log.Fatal(err)
-		}
-		req.SetBasicAuth("USERNAME", confluenceAPIKey)
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Accept", "application/json")
-		resp, err := http.DefaultClient.Do(req)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Println(string(body))
+Disclaimer:
+This software is provided "as is," without warranty of any kind.
+The user assumes full responsibility arising from its use.
 
-	*/
+
+USAGE:
+   {{.HelpName}} {{if .VisibleFlags}}[global options] [values]{{end}}{{if .Commands}}{{end}}
+   {{if len .Authors}}
+AUTHOR:
+   {{range .Authors}}{{ . }}{{end}}
+   {{end}}{{if .Commands}}
+GLOBAL OPTIONS:
+   {{range .VisibleFlags}}{{.}}
+   {{end}}{{end}}{{if .Copyright }}
+COPYRIGHT:
+   {{.Copyright}}
+   {{end}}{{if .Version}}
+   {{end}}
+`
+
+	if err := app.Run(os.Args); err != nil {
+		fmt.Println("Something is missing:", err)
+	}
+
 }
